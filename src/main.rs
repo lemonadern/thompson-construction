@@ -1,63 +1,50 @@
-use thompson_construction::stack::Stack;
+// 連接の演算子として明示的に`.`を利用するトークン列を返す
+fn regex_to_infix(tokens: Vec<char>) -> Vec<char> {
+    let mut v = Vec::new();
 
-fn precedence(c: char) -> u8 {
-    match c {
-        '(' => 1,
-        '|' => 2,
-        '.' => 3,
-        '?' => 4,
-        '*' => 4,
-        '+' => 4,
-        _ => 5,
-    }
-}
-
-fn infix_to_postfix(input: &str) -> String {
-    let mut stack: Stack<char> = Stack::new();
-    let mut output: Vec<char> = Vec::new();
-
-    for c in input.chars() {
-        match c {
-            '(' => stack.push('('),
-            ')' => {
-                while let Some(c) = stack.peek() {
-                    if c == &'(' {
-                        break;
-                    }
-
-                    output.push(stack.pop().unwrap())
-                }
-                stack.pop();
+    let mut literal_is_detected = false;
+    for t in tokens.iter() {
+        match t {
+            c @ ('(' | ')' | '|' | '?' | '+' | '*') => {
+                v.push(*c);
+                literal_is_detected = false;
             }
-            current @ _ => {
-                while let Some(peeked) = stack.peek() {
-                    if precedence(*peeked) >= precedence(current) {
-                        output.push(stack.pop().unwrap())
-                    } else {
-                        break;
-                    }
+            c @ _ => {
+                if literal_is_detected {
+                    v.push('.');
                 }
-                stack.push(c);
+                v.push(*c);
+                literal_is_detected = true;
             }
         }
     }
-
-    while let Some(c) = stack.pop() {
-        output.push(c);
-    }
-
-    output.iter().map(|x| x.to_string()).collect::<String>()
+    v
 }
 
 fn main() {
-    let inputs = vec!["a.b.c", "a.b|c", "a.b+.c", "a.(b.b)+.c"];
-    let expected = vec!["ab.c.", "ab.c|", "ab+.c.", "abb.+.c."];
+    println!("abcdef");
+}
 
-    for (i, e) in inputs.iter().zip(expected.iter()) {
-        assert_eq!(infix_to_postfix(*i), *e);
+#[test]
+fn case1() {
+    let expected: Vec<char> = "a.a.a.b.c".chars().collect();
+    assert_eq!(regex_to_infix("aaabc".chars().collect()), expected)
+}
 
-        println!();
-        println!("output  : {}", infix_to_postfix(*i));
-        println!("expected: {}", *e);
-    }
+#[test]
+fn case2() {
+    let expected: Vec<char> = "a(b)c.c".chars().collect();
+    assert_eq!(regex_to_infix("a(b)cc".chars().collect()), expected)
+}
+
+#[test]
+fn case3() {
+    let expected: Vec<char> = "a|b.a|c(c.c)".chars().collect();
+    assert_eq!(regex_to_infix("a|ba|c(cc)".chars().collect()), expected)
+}
+
+#[test]
+fn case4() {
+    let expected: Vec<char> = "(a|a.b)a+a.b*".chars().collect();
+    assert_eq!(regex_to_infix("(a|ab)a+ab*".chars().collect()), expected)
 }
