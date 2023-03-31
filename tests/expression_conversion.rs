@@ -7,7 +7,7 @@ mod regex_to_infix {
             ("aaabc", "a.a.a.b.c"),
             ("a(b)cc", "a(b)c.c"),
             ("a|ba|c(cc)", "a|b.a|c(c.c)"),
-            ("(a|ab)a+ab*", "(a|a.b)a+a.b*"),
+            ("(a|(ab))a+ab*", "(a|(a.b))a+a.b*"),
         ];
 
         for (i, e) in mapping {
