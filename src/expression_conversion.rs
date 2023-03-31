@@ -25,7 +25,7 @@ pub fn infix_to_postfix(input: &Vec<char>) -> Vec<char> {
                         break;
                     }
                 }
-                stack.push(*c);
+                stack.push(*current);
             }
         }
     }
